@@ -39,3 +39,6 @@ void free(void*);
 int atoi(const char*);
 int memcmp(const void *, const void *, uint);
 void *memcpy(void *, const void *, uint);
+
+// common
+#define dbg printf("=====line %d=====\n", __LINE__);
