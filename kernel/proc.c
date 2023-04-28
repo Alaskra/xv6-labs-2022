@@ -145,6 +145,7 @@ found:
   memset(&p->context, 0, sizeof(p->context));
   p->context.ra = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
+  p->mask = 0;
 
   return p;
 }
@@ -321,6 +322,7 @@ fork(void)
   acquire(&np->lock);
   np->state = RUNNABLE;
   release(&np->lock);
+  np->mask = p->mask;
 
   return pid;
 }
@@ -680,4 +682,17 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+// return number of proc which is UNUSED
+uint64
+procnum(void)
+{
+  uint64 num = 0;
+  struct proc *p;
+  for(p = proc; p < &proc[NPROC]; p++) {
+    if (p->state != UNUSED)
+      ++num;
+  }
+  return num;
 }
