@@ -447,8 +447,8 @@ static void vmprint_recu(pagetable_t pagetable, int depth) {
     pte = pagetable[i];
     if (pte & PTE_V) {
       npagetable = (pagetable_t)PTE2PA(pte);
-      for (int j=0; j<depth; ++j) {
-        printf("..");
+      for (int j=0; j<=depth; ++j) {
+        printf(" ..");
       }
       printf("%d: pte %p pa %p\n", i, pte, npagetable);
       vmprint_recu(npagetable, depth+1);
@@ -456,7 +456,6 @@ static void vmprint_recu(pagetable_t pagetable, int depth) {
   }
 }
 
-// 没法通过测试，但这个实现应该是正确的
 void vmprint(pagetable_t pagetable) {
   printf("page table %p\n", pagetable);
   vmprint_recu(pagetable, 0);
