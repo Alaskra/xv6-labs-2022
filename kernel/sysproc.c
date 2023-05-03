@@ -92,3 +92,37 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+uint64
+sys_sigalarm(void)
+{
+  int ticks;
+  uint64 handler;
+
+  argint(0, &ticks);
+  argaddr(1, &handler);
+
+  struct proc* p;
+  p = myproc();
+  p->ticks = ticks;
+  p->handler = handler;
+  p->t_since_last_call = 0;
+
+  return 0;
+}
+
+uint64
+sys_sigreturn(void)
+{
+  struct proc* p;
+  p = myproc();
+  p->t_since_last_call = 0;
+
+  // restore rigisters
+  
+  *(p->trapframe) = p->saved_status_for_sigalarm;
+
+  usertrapret();
+
+  return 0;
+}

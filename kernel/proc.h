@@ -91,6 +91,10 @@ struct proc {
   int killed;                  // If non-zero, have been killed
   int xstate;                  // Exit status to be returned to parent's wait
   int pid;                     // Process ID
+  int ticks;                   // for sys_sigalarm
+  uint64 handler;              // for sys_sigalarm
+  uint64 t_since_last_call;    // for sys_sigalarm, ticks since last call handler
+  struct trapframe saved_status_for_sigalarm;
 
   // wait_lock must be held when using this:
   struct proc *parent;         // Parent process
