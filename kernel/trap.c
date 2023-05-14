@@ -9,7 +9,7 @@
 struct spinlock tickslock;
 uint ticks;
 
-extern char trampoline[], uservec[], userret[];
+extern char trampoline[], uservec[], userret[], pa_ref_cnt[];
 
 // in kernelvec.S, calls kerneltrap().
 void kernelvec();
@@ -67,7 +67,20 @@ usertrap(void)
     syscall();
   } else if((which_dev = devintr()) != 0){
     // ok
+  } else if(r_scause() == 15){
+    pte_t* pte;
+    uint64 va;
+
+    va =  r_stval();
+    if(va >= MAXVA) {
+      goto err;
+    }
+    pte = walk(p->pagetable, va, 0);
+    if (((*pte)&PTE_C) == 0)
+      goto err;
+    cow_process(pte);
   } else {
+err:
     printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
     printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
     setkilled(p);

@@ -11,6 +11,10 @@
  */
 pagetable_t kernel_pagetable;
 
+// physical page reference count, index start from KERNBASE
+// a page: 4k = 2**12
+char pa_ref_cnt[((PHYSTOP-KERNBASE)>>12)+1];
+
 extern char etext[];  // kernel.ld sets this to end of kernel code.
 
 extern char trampoline[]; // trampoline.S
@@ -302,26 +306,29 @@ uvmfree(pagetable_t pagetable, uint64 sz)
 // physical memory.
 // returns 0 on success, -1 on failure.
 // frees any allocated pages on failure.
-int
-uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
-{
+//
+// MODIFIED to support COW: map the parent's physical pages into the child,
+// instead of allocating new pages. Clear PTE_W in the PTEs of both child and
+// parent for pages that have PTE_W set.
+int uvmcopy(pagetable_t old, pagetable_t new, uint64 sz) {
   pte_t *pte;
   uint64 pa, i;
   uint flags;
-  char *mem;
 
-  for(i = 0; i < sz; i += PGSIZE){
-    if((pte = walk(old, i, 0)) == 0)
+  for (i = 0; i < sz; i += PGSIZE) {
+    if ((pte = walk(old, i, 0)) == 0)
       panic("uvmcopy: pte should exist");
-    if((*pte & PTE_V) == 0)
+    if ((*pte & PTE_V) == 0)
       panic("uvmcopy: page not present");
     pa = PTE2PA(*pte);
     flags = PTE_FLAGS(*pte);
-    if((mem = kalloc()) == 0)
-      goto err;
-    memmove(mem, (char*)pa, PGSIZE);
-    if(mappages(new, i, PGSIZE, (uint64)mem, flags) != 0){
-      kfree(mem);
+    if (flags & PTE_W) {
+      flags |= PTE_C;
+      flags &= ~PTE_W;
+      *pte = ((*pte)&0xFFFFFC00)|flags;
+    }
+    pa_ref_cnt[(pa-KERNBASE)>>12] += 1;
+    if (mappages(new, i, PGSIZE, (uint64)pa, flags) != 0) {
       goto err;
     }
   }
@@ -352,10 +359,25 @@ int
 copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
 {
   uint64 n, va0, pa0;
+  pte_t *pte;
 
   while(len > 0){
     va0 = PGROUNDDOWN(dstva);
-    pa0 = walkaddr(pagetable, va0);
+
+    if(va0 >= MAXVA)
+      return -1;
+    pte = walk(pagetable, va0, 0);
+    if(pte == 0)
+      return -1;
+    if((*pte & PTE_V) == 0)
+      return -1;
+    if((*pte & PTE_U) == 0)
+      return -1;
+    if((*pte & PTE_W) == 0)
+      if(cow_process(pte) != 0)
+        return -1;
+    pa0 = PTE2PA(*pte);
+
     if(pa0 == 0)
       return -1;
     n = PGSIZE - (dstva - va0);
