@@ -12,8 +12,22 @@
 
 
 struct thread {
-  char       stack[STACK_SIZE]; /* the thread's stack */
+  void *ra;
+  void *sp;
+  void *fp;
+  void *s1;
+  void *s2;
+  void *s3;
+  void *s4;
+  void *s5;
+  void *s6;
+  void *s7;
+  void *s8;
+  void *s9;
+  void *s10;
+  void *s11;
   int        state;             /* FREE, RUNNING, RUNNABLE */
+  char       stack[STACK_SIZE]; /* the thread's stack */
 };
 struct thread all_thread[MAX_THREAD];
 struct thread *current_thread;
@@ -60,8 +74,9 @@ thread_schedule(void)
     current_thread = next_thread;
     /* YOUR CODE HERE
      * Invoke thread_switch to switch from t to next_thread:
-     * thread_switch(??, ??);
+     * thread_switch(old_stack, new_stack)
      */
+     thread_switch((uint64)t, (uint64)current_thread);
   } else
     next_thread = 0;
 }
@@ -76,6 +91,8 @@ thread_create(void (*func)())
   }
   t->state = RUNNABLE;
   // YOUR CODE HERE
+  t->ra = func;
+  t->sp = t->stack+STACK_SIZE-1;
 }
 
 void 
