@@ -1,9 +1,12 @@
 Looking at the backtrace output, which function called syscall?
     usertrap()
 What is the value of p->trapframe->a7 and what does that value represent? (Hint: look user/initcode.S, the first user program xv6 starts.)
-    0x7
+    0x7, it represent the syscall number, 7 means SYS_exec
 What was the previous mode that the CPU was in?
     0
+Write down the assembly instruction the kernel is panicing at. Which register corresponds to the varialable num? 
+    80001ff8:	00002683          	lw	a3,0(zero) # 0 <_entry-0x80000000>
+    a3
 Why does the kernel crash? Hint: look at figure 3-3 in the text; is address 0 mapped in the kernel address space? Is that confirmed by the value in scause above? (See description of scause in RISC-V privileged instructions)
     because it trys to read value in addrese 0x0, which is not in kernel address space(according to book-riscv-rev3.pdf, Figure 3-3)
     scause is 0b1101, shows it is a load page fault
