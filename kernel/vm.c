@@ -5,6 +5,7 @@
 #include "riscv.h"
 #include "defs.h"
 #include "fs.h"
+#include "spinlock.h"
 
 /*
  * the kernel's page table.
@@ -13,7 +14,8 @@ pagetable_t kernel_pagetable;
 
 // physical page reference count, index start from KERNBASE
 // a page: 4k = 2**12
-char pa_ref_cnt[((PHYSTOP-KERNBASE)>>12)+1];
+char pa_ref_cnt[((PHYSTOP-KERNBASE)>>12)+1] = {0};
+struct spinlock pa_ref_cnt_lock;
 
 extern char etext[];  // kernel.ld sets this to end of kernel code.
 
@@ -129,15 +131,41 @@ walkaddr(pagetable_t pagetable, uint64 va)
   return pa;
 }
 
+int
+kvmappages(pagetable_t pagetable, uint64 va, uint64 size, uint64 pa, int perm)
+{
+  uint64 a, last;
+  pte_t *pte;
+
+  if(size == 0)
+    panic("mappages: size");
+  
+  a = PGROUNDDOWN(va);
+  last = PGROUNDDOWN(va + size - 1);
+  for(;;){
+    if((pte = walk(pagetable, a, 1)) == 0)
+      return -1;
+    if(*pte & PTE_V)
+      panic("mappages: remap");
+    *pte = PA2PTE(pa) | perm | PTE_V;
+    if(a == last)
+      break;
+    a += PGSIZE;
+    pa += PGSIZE;
+  }
+  return 0;
+}
+
 // add a mapping to the kernel page table.
 // only used when booting.
 // does not flush TLB or enable paging.
 void
 kvmmap(pagetable_t kpgtbl, uint64 va, uint64 pa, uint64 sz, int perm)
 {
-  if(mappages(kpgtbl, va, sz, pa, perm) != 0)
+  if(kvmappages(kpgtbl, va, sz, pa, perm) != 0)
     panic("kvmmap");
 }
+
 
 // Create PTEs for virtual addresses starting at va that refer to
 // physical addresses starting at pa. va and size might not
@@ -155,6 +183,12 @@ mappages(pagetable_t pagetable, uint64 va, uint64 size, uint64 pa, int perm)
   a = PGROUNDDOWN(va);
   last = PGROUNDDOWN(va + size - 1);
   for(;;){
+    if (pa < KERNBASE && pa >= PHYSTOP)
+      panic("mappages: pa out of range");
+    acquire(&pa_ref_cnt_lock);
+    pa_ref_cnt[(pa-KERNBASE)>>12] += 1;
+    release(&pa_ref_cnt_lock);
+
     if((pte = walk(pagetable, a, 1)) == 0)
       return -1;
     if(*pte & PTE_V)
@@ -187,10 +221,19 @@ uvmunmap(pagetable_t pagetable, uint64 va, uint64 npages, int do_free)
       panic("uvmunmap: not mapped");
     if(PTE_FLAGS(*pte) == PTE_V)
       panic("uvmunmap: not a leaf");
+    uint64 pa = PTE2PA(*pte);
+    if (pa < KERNBASE && pa >= PHYSTOP)
+      panic("uvmunmap: pa out of range");
+    acquire(&pa_ref_cnt_lock);
+    pa_ref_cnt[(pa-KERNBASE)>>12] -= 1;
     if(do_free){
-      uint64 pa = PTE2PA(*pte);
-      kfree((void*)pa);
+      char cnt = pa_ref_cnt[(pa-KERNBASE)>>12];
+      if (cnt == 0)
+        kfree((void*)pa);
+      else if (cnt < 0)
+        panic("uvmunmap: pa_ref_cnt less than zero");
     }
+    release(&pa_ref_cnt_lock);
     *pte = 0;
   }
 }
@@ -315,10 +358,10 @@ int uvmcopy(pagetable_t old, pagetable_t new, uint64 sz) {
   uint64 pa, i;
   uint flags;
 
-  for (i = 0; i < sz; i += PGSIZE) {
-    if ((pte = walk(old, i, 0)) == 0)
+  for(i = 0; i < sz; i += PGSIZE){
+    if((pte = walk(old, i, 0)) == 0)
       panic("uvmcopy: pte should exist");
-    if ((*pte & PTE_V) == 0)
+    if((*pte & PTE_V) == 0)
       panic("uvmcopy: page not present");
     pa = PTE2PA(*pte);
     flags = PTE_FLAGS(*pte);
@@ -327,8 +370,7 @@ int uvmcopy(pagetable_t old, pagetable_t new, uint64 sz) {
       flags &= ~PTE_W;
       *pte = ((*pte)&0xFFFFFC00)|flags;
     }
-    pa_ref_cnt[(pa-KERNBASE)>>12] += 1;
-    if (mappages(new, i, PGSIZE, (uint64)pa, flags) != 0) {
+    if(mappages(new, i, PGSIZE, (uint64)pa, flags) != 0) {
       goto err;
     }
   }
@@ -373,7 +415,7 @@ copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
       return -1;
     if((*pte & PTE_U) == 0)
       return -1;
-    if((*pte & PTE_W) == 0)
+    if((*pte & PTE_W) == 0 && (*pte & PTE_C))
       if(cow_process(pte) != 0)
         return -1;
     pa0 = PTE2PA(*pte);
