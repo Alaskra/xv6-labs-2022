@@ -1,0 +1,8 @@
+Why are there missing keys with 2 threads, but not with 1 thread? Identify a sequence of events with 2 threads that can lead to a key being missing
+    suppose there are thread1 and thread2. They try to insert key in the same bucket, and there execution enter to the `intert` at the same time. Thread1 execute the line32-36, then thread2 execute the line32-36, then key inserted by thread missed. Show as below:
+            ------------------------------------
+                o(thread1) -> o -> o -> o
+                              ^
+                              |
+                              o(thread2)
+            ------------------------------------
