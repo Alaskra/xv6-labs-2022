@@ -1,0 +1,3 @@
+3h read document and configure vscode debugger
+3h finish transmit
+3h debug, try implement receive
