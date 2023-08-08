@@ -98,11 +98,7 @@ usertrap(void)
         // vma->prot need to convert to PTE bit
         mappages(p->pagetable, va, PGSIZE, (uint64)mem, PTE_U|(vma->prot<<1));
         find = 1;
-        int read_num = readi(vma->file->ip, 1, va, vma->offset+va-va_start, PGSIZE);
-        printf("read %d bytes\n", read_num);
-        void vmprint(pagetable_t pagetable);
-        printf("==========pagetable after mmap handle page fault\n");
-        vmprint(p->pagetable);
+        readi(vma->file->ip, 1, va, vma->offset+va-va_start, PGSIZE);
         break;
       }
     }

@@ -531,9 +531,6 @@ sys_mmap(void)
 
   struct proc* p = myproc();
   struct vma* vma;
-  void vmprint(pagetable_t pagetable);
-  printf("==========pagetable before mmap\n");
-  vmprint(p->pagetable);
   for (int i=0; i<16; ++i) {
     vma = &p->vma[i];
     if (vma->addr == 0) {
@@ -607,9 +604,6 @@ sys_munmap(void)
           fileclose(vma->file);
           memset(vma, 0, sizeof(struct vma));
         }
-        void vmprint(pagetable_t pagetable);
-        printf("==========pagetable after unmap\n");
-        vmprint(p->pagetable);
         return vma->addr;
     }
   }

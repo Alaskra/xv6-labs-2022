@@ -402,9 +402,6 @@ exit(int status)
       }
       fileclose(vma->file);
       memset(vma, 0, sizeof(struct vma));
-      void vmprint(pagetable_t pagetable);
-      printf("==========pagetable after free proc\n");
-      vmprint(p->pagetable);
     }
   }
 
