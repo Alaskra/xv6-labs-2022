@@ -73,6 +73,8 @@ usertrap(void)
   } else if(r_scause() == 13 || r_scause() == 15) {
     uint64 va = r_stval();
     va = PGROUNDDOWN(va);
+    if (va >= MAXVA)
+      goto err;
     pte_t* pte = walk(p->pagetable, va, 1);
     if (pte == 0)
       goto err;
