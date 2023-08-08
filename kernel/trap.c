@@ -5,6 +5,9 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "fs.h"
+#include "sleeplock.h"
+#include "file.h"
 
 struct spinlock tickslock;
 uint ticks;
@@ -49,7 +52,7 @@ usertrap(void)
   
   // save user program counter.
   p->trapframe->epc = r_sepc();
-  
+
   if(r_scause() == 8){
     // system call
 
@@ -67,6 +70,48 @@ usertrap(void)
     syscall();
   } else if((which_dev = devintr()) != 0){
     // ok
+  } else if(r_scause() == 13 || r_scause() == 15) {
+    uint64 va = r_stval();
+    va = PGROUNDDOWN(va);
+    pte_t* pte = walk(p->pagetable, va, 1);
+    if (pte == 0)
+      goto err;
+    if (*pte & PTE_V)
+      goto err;
+
+    // check vma to process mmap
+    struct vma* vma;
+    int find = 0;
+    int va_start, va_end;
+    char *mem;
+    for (int i=0; i<16; ++i) {
+      vma = &p->vma[i];
+      va_start = vma->addr;
+      va_end = va_start + vma->length;
+      if (va >= va_start && va < va_end) {
+        mem = kalloc();
+        if(mem == 0){
+          kfree(mem);
+          break;
+        }
+        memset(mem, 0, PGSIZE);
+        // vma->prot need to convert to PTE bit
+        mappages(p->pagetable, va, PGSIZE, (uint64)mem, PTE_U|(vma->prot<<1));
+        find = 1;
+        int read_num = readi(vma->file->ip, 1, va, vma->offset+va-va_start, PGSIZE);
+        printf("read %d bytes\n", read_num);
+        void vmprint(pagetable_t pagetable);
+        printf("==========pagetable after mmap handle page fault\n");
+        vmprint(p->pagetable);
+        break;
+      }
+    }
+    if (find == 0) {
+err:
+      printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
+      printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
+      setkilled(p);
+    }
   } else {
     printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
     printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());

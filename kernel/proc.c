@@ -5,6 +5,10 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "fs.h"
+#include "sleeplock.h"
+#include "file.h"
+#include "fcntl.h"
 
 struct cpu cpus[NCPU];
 
@@ -296,6 +300,19 @@ fork(void)
   }
   np->sz = p->sz;
 
+  // Copy mmap vam from parent to child.
+  for (int i=0; i<16; ++i) {
+    struct vma* vma = &p->vma[i];
+    if (vma->addr != 0) {
+      np->vma[i].addr = vma->addr;
+      np->vma[i].offset = vma->offset;
+      np->vma[i].length = vma->length;
+      np->vma[i].flags = vma->flags;
+      np->vma[i].prot = vma->prot;
+      np->vma[i].file = filedup(vma->file);
+    }
+  }
+
   // copy saved user registers.
   *(np->trapframe) = *(p->trapframe);
 
@@ -359,6 +376,38 @@ exit(int status)
       p->ofile[fd] = 0;
     }
   }
+
+
+  // free mmap vma
+  for (int i=0; i<16; ++i) {
+    struct vma* vma = &p->vma[i];
+    if (vma->addr != 0) {
+      struct file* f = vma->file;
+      uint64 va_start = vma->addr;
+      for (uint64 off=0; off < vma->length; off += PGSIZE) {
+        if (walkaddr(p->pagetable, va_start+off)) {
+          if (vma->flags == MAP_SHARED) {
+            // write back to file
+            for (int off1=0; off1<4*BSIZE; off1 += 2*BSIZE) {
+              begin_op();
+              ilock(f->ip);
+              if (writei(f->ip, 1, va_start+off+off1, vma->offset+off+off1, 2*BSIZE) <= 0)
+                printf("error: unmap filewrite\n");
+              iunlock(f->ip);
+              end_op();
+            }
+          }
+          uvmunmap(p->pagetable, va_start+off, 1, 1);
+        }
+      }
+      fileclose(vma->file);
+      memset(vma, 0, sizeof(struct vma));
+      void vmprint(pagetable_t pagetable);
+      printf("==========pagetable after free proc\n");
+      vmprint(p->pagetable);
+    }
+  }
+
 
   begin_op();
   iput(p->cwd);
