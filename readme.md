@@ -1,55 +1,3 @@
-xv6 is a re-implementation of Dennis Ritchie's and Ken Thompson's Unix
-Version 6 (v6).  xv6 loosely follows the structure and style of v6,
-but is implemented for a modern RISC-V multiprocessor using ANSI C.
-
-ACKNOWLEDGMENTS
-
-xv6 is inspired by John Lions's Commentary on UNIX 6th Edition (Peer
-to Peer Communications; ISBN: 1-57398-013-7; 1st edition (June 14,
-2000)).  See also https://pdos.csail.mit.edu/6.1810/, which provides
-pointers to on-line resources for v6.
-
-The following people have made contributions: Russ Cox (context switching,
-locking), Cliff Frey (MP), Xiao Yu (MP), Nickolai Zeldovich, and Austin
-Clements.
-
-We are also grateful for the bug reports and patches contributed by
-Takahiro Aoyagi, Silas Boyd-Wickizer, Anton Burtsev, carlclone, Ian
-Chen, Dan Cross, Cody Cutler, Mike CAT, Tej Chajed, Asami Doi,
-eyalz800, Nelson Elhage, Saar Ettinger, Alice Ferrazzi, Nathaniel
-Filardo, flespark, Peter Froehlich, Yakir Goaron, Shivam Handa, Matt
-Harvey, Bryan Henry, jaichenhengjie, Jim Huang, Matúš Jókay, John
-Jolly, Alexander Kapshuk, Anders Kaseorg, kehao95, Wolfgang Keller,
-Jungwoo Kim, Jonathan Kimmitt, Eddie Kohler, Vadim Kolontsov, Austin
-Liew, l0stman, Pavan Maddamsetti, Imbar Marinescu, Yandong Mao, Matan
-Shabtay, Hitoshi Mitake, Carmi Merimovich, Mark Morrissey, mtasm, Joel
-Nider, Hayato Ohhashi, OptimisticSide, Harry Porter, Greg Price, Jude
-Rich, segfault, Ayan Shafqat, Eldar Sehayek, Yongming Shen, Fumiya
-Shigemitsu, Cam Tenny, tyfkda, Warren Toomey, Stephen Tu, Rafael Ubal,
-Amane Uehara, Pablo Ventura, Xi Wang, WaheedHafez, Keiichi Watanabe,
-Nicolas Wolovick, wxdao, Grant Wu, Jindong Zhang, Icenowy Zheng,
-ZhUyU1997, and Zou Chang Wei.
-
-
-The code in the files that constitute xv6 is
-Copyright 2006-2022 Frans Kaashoek, Robert Morris, and Russ Cox.
-
-ERROR REPORTS
-
-Please send errors and suggestions to Frans Kaashoek and Robert Morris
-(kaashoek,rtm@mit.edu).  The main purpose of xv6 is as a teaching
-operating system for MIT's 6.1810, so we are more interested in
-simplifications and clarifications than new features.
-
-BUILDING AND RUNNING XV6
-
-You will need a RISC-V "newlib" tool chain from
-https://github.com/riscv/riscv-gnu-toolchain, and qemu compiled for
-riscv64-softmmu.  Once they are installed, and in your shell
-search path, you can run "make qemu".
-
-------------
-
 ## MIT 操作系统课程（2022年）
 
 ### 课程资源
@@ -61,8 +9,8 @@ search path, you can run "make qemu".
     - https://mit-public-courses-cn-translatio.gitbook.io/mit6-s081/
 
 ### lab1
-https://pdos.csail.mit.edu/6.828/2022/labs/util.html
-https://github.com/Alaskra/xv6-labs-2022/tree/lab1
+- https://pdos.csail.mit.edu/6.828/2022/labs/util.html
+- https://github.com/Alaskra/xv6-labs-2022/tree/lab1
 #### 实验内容
 - 编写如下shell工具：find, xargs, pingpong, sleep, primes
 #### 实验目标
@@ -73,8 +21,8 @@ https://github.com/Alaskra/xv6-labs-2022/tree/lab1
 - primes的编写，注意pipe的管理
 
 ### lab2
-https://pdos.csail.mit.edu/6.828/2022/labs/syscall.html
-https://github.com/Alaskra/xv6-labs-2022/tree/lab2
+- https://pdos.csail.mit.edu/6.828/2022/labs/syscall.html
+- https://github.com/Alaskra/xv6-labs-2022/tree/lab2
 #### 实验内容
 - 根据gdb的结果回答问题
 - 添加系统调用: trace, sysinfo
@@ -94,8 +42,8 @@ https://github.com/Alaskra/xv6-labs-2022/tree/lab2
         - 配置.vscode/launch.json（内容参照main分支对应文件）
 
 ### lab3
-https://pdos.csail.mit.edu/6.828/2022/labs/syscall.html
-https://github.com/Alaskra/xv6-labs-2022/tree/lab3
+- https://pdos.csail.mit.edu/6.828/2022/labs/syscall.html
+- https://github.com/Alaskra/xv6-labs-2022/tree/lab3
 #### 实验内容
 - Speed up system calls
 - Print a page table
@@ -118,8 +66,8 @@ https://github.com/Alaskra/xv6-labs-2022/tree/lab3
 - kalloc可以选择在不同地方执行，需要考虑不同选择的后果，以避免bug
 
 ### lab4
-https://pdos.csail.mit.edu/6.828/2022/labs/traps.html
-https://github.com/Alaskra/xv6-labs-2022/tree/lab4
+- https://pdos.csail.mit.edu/6.828/2022/labs/traps.html
+- https://github.com/Alaskra/xv6-labs-2022/tree/lab4
 #### 实验内容
 - RISC-V assembly
 - backtrace
@@ -134,8 +82,8 @@ https://github.com/Alaskra/xv6-labs-2022/tree/lab4
 - handle函数会占用本该用于保存用户程序的trampframe，需要在proc结构体中额外开辟空间存保存寄存器
 
 ### lab5
-https://pdos.csail.mit.edu/6.828/2022/labs/cow.html
-https://github.com/Alaskra/xv6-labs-2022/tree/lab5
+- https://pdos.csail.mit.edu/6.828/2022/labs/cow.html
+- https://github.com/Alaskra/xv6-labs-2022/tree/lab5
 #### 实验内容
 - 实现COW
 #### 实验目标
@@ -150,8 +98,8 @@ https://github.com/Alaskra/xv6-labs-2022/tree/lab5
 - 没有将ref_cnt设置锁，导致多核条件下出错
 
 ### lab6
-https://pdos.csail.mit.edu/6.828/2022/labs/thread.html
-https://github.com/Alaskra/xv6-labs-2022/tree/lab6
+- https://pdos.csail.mit.edu/6.828/2022/labs/thread.html
+- https://github.com/Alaskra/xv6-labs-2022/tree/lab6
 #### 实验内容
 - Uthread: switching between threads，用户级别的线程系统
 - Using threads和Barrier，使用pthread完成实验
@@ -169,8 +117,8 @@ https://github.com/Alaskra/xv6-labs-2022/tree/lab6
 - 对hash table的不同bucket分别加锁，以减少竞争锁带来的开销
 
 ### lab7
-https://pdos.csail.mit.edu/6.828/2022/labs/net.html
-https://github.com/Alaskra/xv6-labs-2022/tree/lab7
+- https://pdos.csail.mit.edu/6.828/2022/labs/net.html
+- https://github.com/Alaskra/xv6-labs-2022/tree/lab7
 #### 实验内容
 - networking，实现网络驱动
 #### 实验目标
@@ -204,8 +152,8 @@ https://github.com/Alaskra/xv6-labs-2022/tree/lab7
     - 消费者CPU从tail+1读数据，然后tail++
 
 ### lab8
-https://pdos.csail.mit.edu/6.828/2022/labs/lock.html
-https://github.com/Alaskra/xv6-labs-2022/tree/lab8
+- https://pdos.csail.mit.edu/6.828/2022/labs/lock.html
+- https://github.com/Alaskra/xv6-labs-2022/tree/lab8
 #### 实验内容
 - Memory allocator, 减少kalloc和kfree导致的竞争
 - Buffer cache，减少disk cache的竞争
@@ -217,8 +165,8 @@ https://github.com/Alaskra/xv6-labs-2022/tree/lab8
 - 通过按序获得锁来避免死锁
 
 ### lab9
-https://pdos.csail.mit.edu/6.828/2022/labs/fs.html
-https://github.com/Alaskra/xv6-labs-2022/tree/lab9
+- https://pdos.csail.mit.edu/6.828/2022/labs/fs.html
+- https://github.com/Alaskra/xv6-labs-2022/tree/lab9
 #### 实验内容
 - Large files
 - Symbolic links
@@ -230,8 +178,8 @@ https://github.com/Alaskra/xv6-labs-2022/tree/lab9
 - symlink递归查找时，没有释放锁就覆盖了inode指针，导致bug
 
 ### lab10
-https://pdos.csail.mit.edu/6.828/2022/labs/mmap.html
-https://github.com/Alaskra/xv6-labs-2022/tree/lab10
+- https://pdos.csail.mit.edu/6.828/2022/labs/mmap.html
+- https://github.com/Alaskra/xv6-labs-2022/tree/lab10
 #### 实验内容
 - mmap
 #### 实验目标
