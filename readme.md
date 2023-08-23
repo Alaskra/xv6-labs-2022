@@ -8,7 +8,7 @@
     - https://www.bilibili.com/video/BV1rS4y1n7y1
     - https://mit-public-courses-cn-translatio.gitbook.io/mit6-s081/
 
-### lab1
+### lab1: Unix utilities
 - https://pdos.csail.mit.edu/6.828/2022/labs/util.html
 - https://github.com/Alaskra/xv6-labs-2022/tree/lab1
 #### 实验内容
@@ -20,7 +20,7 @@
 - 父进程要使用wait来回收子进程，不然会出错
 - primes的编写，注意pipe的管理
 
-### lab2
+### lab2: System calls
 - https://pdos.csail.mit.edu/6.828/2022/labs/syscall.html
 - https://github.com/Alaskra/xv6-labs-2022/tree/lab2
 #### 实验内容
@@ -41,7 +41,7 @@
         - 需要安装插件：Native Debug
         - 配置.vscode/launch.json（内容参照main分支对应文件）
 
-### lab3
+### lab3: Page tables
 - https://pdos.csail.mit.edu/6.828/2022/labs/syscall.html
 - https://github.com/Alaskra/xv6-labs-2022/tree/lab3
 #### 实验内容
@@ -65,7 +65,7 @@
 - 为了找出不一致的原因，首先确定不一致的地方是页表中虚拟地址对应的物理地址，于是怀疑是kalloc和kfree的顺序引起。对比我的代码和其它参考代码，最终发现是没考虑到exec中还有创建和删除页表的操作，原本以为只有创建和退出进程的时候才有创建和删除页表的操作。
 - kalloc可以选择在不同地方执行，需要考虑不同选择的后果，以避免bug
 
-### lab4
+### lab4: Traps
 - https://pdos.csail.mit.edu/6.828/2022/labs/traps.html
 - https://github.com/Alaskra/xv6-labs-2022/tree/lab4
 #### 实验内容
@@ -81,7 +81,7 @@
 - alarm中的handle函数需要另一套执行环境，因为它不是用户程序调用的，也不是在内核中执行
 - handle函数会占用本该用于保存用户程序的trampframe，需要在proc结构体中额外开辟空间存保存寄存器
 
-### lab5
+### lab5: Copy-on-write fork
 - https://pdos.csail.mit.edu/6.828/2022/labs/cow.html
 - https://github.com/Alaskra/xv6-labs-2022/tree/lab5
 #### 实验内容
@@ -97,7 +97,7 @@
 #### 坑
 - 没有将ref_cnt设置锁，导致多核条件下出错
 
-### lab6
+### lab6: Multithreading
 - https://pdos.csail.mit.edu/6.828/2022/labs/thread.html
 - https://github.com/Alaskra/xv6-labs-2022/tree/lab6
 #### 实验内容
@@ -116,7 +116,7 @@
 - pthread_cond_wait和pthread_cond_broadcast就相当于xv6的sleep和wakeup
 - 对hash table的不同bucket分别加锁，以减少竞争锁带来的开销
 
-### lab7
+### lab7: Network driver
 - https://pdos.csail.mit.edu/6.828/2022/labs/net.html
 - https://github.com/Alaskra/xv6-labs-2022/tree/lab7
 #### 实验内容
@@ -151,7 +151,7 @@
     - 初始队列为空，所以head=0，tail=15
     - 消费者CPU从tail+1读数据，然后tail++
 
-### lab8
+### lab8: Parallelism/locking
 - https://pdos.csail.mit.edu/6.828/2022/labs/lock.html
 - https://github.com/Alaskra/xv6-labs-2022/tree/lab8
 #### 实验内容
@@ -164,7 +164,7 @@
 - 先熟悉不同lock的用途
 - 通过按序获得锁来避免死锁
 
-### lab9
+### lab9: File system
 - https://pdos.csail.mit.edu/6.828/2022/labs/fs.html
 - https://github.com/Alaskra/xv6-labs-2022/tree/lab9
 #### 实验内容
@@ -177,7 +177,7 @@
 - fs.h中的NDBLINDIRECT值搞错了，导致代码中数组越界。这种错误，而且还是在操作系统代码中，太难根据测试来定位了，既然代码不多，应该直接从源代码定位的。但是本能地忽略了.h文件中宏定义错误的可能性，只检查.c文件中的逻辑，导致一直找不到错误。
 - symlink递归查找时，没有释放锁就覆盖了inode指针，导致bug
 
-### lab10
+### lab10: Mmap
 - https://pdos.csail.mit.edu/6.828/2022/labs/mmap.html
 - https://github.com/Alaskra/xv6-labs-2022/tree/lab10
 #### 实验内容
